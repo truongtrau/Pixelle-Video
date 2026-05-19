@@ -209,17 +209,17 @@ EDGE_TTS_VOICES: List[Dict[str, Any]] = [
 ]
 
 
-def get_voice_display_name(voice_id: str, tr_func=None, locale: str = "zh_CN") -> str:
+def get_voice_display_name(voice_id: str, tr_func=None, _locale: str = "zh_CN") -> str:
     """
     Get display name for voice
-    
+
     Args:
         voice_id: Voice ID (e.g., "zh-CN-YunjianNeural")
         tr_func: Translation function (optional)
-        locale: Current locale (default: "zh_CN")
-    
+        _locale: Kept for backward compatibility, no longer used
+
     Returns:
-        Display name (translated label if in Chinese, otherwise voice ID)
+        Translated label if translation exists, otherwise voice ID
     """
     # Find voice config
     voice_config = next((v for v in EDGE_TTS_VOICES if v["id"] == voice_id), None)
@@ -227,12 +227,14 @@ def get_voice_display_name(voice_id: str, tr_func=None, locale: str = "zh_CN") -
     if not voice_config:
         return voice_id
     
-    # If Chinese locale and translation function available, use translated label
-    if locale == "zh_CN" and tr_func:
+    # Use translation function if available
+    if tr_func:
         label_key = voice_config["label_key"]
-        return tr_func(label_key)
-    
-    # For other locales, return voice ID
+        translated = tr_func(label_key)
+        if translated != label_key:
+            return translated
+
+    # Fallback to voice ID
     return voice_id
 
 
